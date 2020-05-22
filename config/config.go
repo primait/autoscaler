@@ -42,6 +42,10 @@ type (
 			Deadline time.Duration `envconfig:"DRONE_INSTALL_CHECK_DEADLINE" default:"30m"`
 		}
 
+    Installer struct {
+      Enabled bool           `envconfig:"DRONE_INSTALL_ENABLED" default:true`
+    }
+
 		Server struct {
 			Host  string
 			Proto string

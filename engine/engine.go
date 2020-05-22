@@ -83,6 +83,7 @@ func New(
 			watchtowerImage:    config.Watchtower.Image,
 			watchtowerTimeout:  config.Watchtower.Timeout,
 			watchtowerInterval: config.Watchtower.Interval,
+      enabled:            config.Installer.Enabled,
 		},
 		pinger: &pinger{
 			servers: servers,

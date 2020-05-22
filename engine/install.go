@@ -59,6 +59,7 @@ type installer struct {
 	servers autoscaler.ServerStore
 	metrics metrics.Collector
 	client  clientFunc
+  enabled bool
 }
 
 func (i *installer) Install(ctx context.Context) error {
@@ -80,11 +81,29 @@ func (i *installer) Install(ctx context.Context) error {
 			return err
 		}
 
-		i.wg.Add(1)
-		go func(server *autoscaler.Server) {
-			i.install(ctx, server)
-			i.wg.Done()
-		}(server)
+    i.wg.Add(1)
+    if i.enabled {
+    		go func(server *autoscaler.Server) {
+    			i.install(ctx, server)
+    			i.wg.Done()
+    		}(server)
+    } else {
+      go func() {
+        time.Sleep(5 * time.Minute)
+        i.wg.Done()
+      }()
+    }
+
+    server.State = autoscaler.StateRunning
+    err = i.servers.Update(ctx, server)
+    if err != nil {
+      i.metrics.IncrServerSetupError()
+      logger.WithError(err).
+        WithField("server", server.Name).
+        WithField("state", "running").
+        Errorln("failed to update server state")
+      return err
+    }
 	}
 	return nil
 }
@@ -277,16 +296,16 @@ poller:
 	// track elapsed time to install software.
 	i.metrics.TrackServerSetupTime(start)
 
-	instance.State = autoscaler.StateRunning
-	err = i.servers.Update(ctx, instance)
-	if err != nil {
-		i.metrics.IncrServerSetupError()
-		logger.WithError(err).
-			WithField("server", instance.Name).
-			WithField("state", "running").
-			Errorln("failed to update server state")
-		return err
-	}
+	// instance.State = autoscaler.StateRunning
+	// err = i.servers.Update(ctx, instance)
+	// if err != nil {
+	// 	i.metrics.IncrServerSetupError()
+	// 	logger.WithError(err).
+	// 		WithField("server", instance.Name).
+	// 		WithField("state", "running").
+	// 		Errorln("failed to update server state")
+	// 	return err
+	// }
 
 	return nil
 }

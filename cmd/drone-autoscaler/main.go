@@ -285,7 +285,7 @@ func setupProvider(c config.Config) (autoscaler.Provider, error) {
 			packet.WithHostname(c.Packet.Hostname),
 			packet.WithTags(c.Packet.Tags...),
 		), nil
-	case os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_IAM") != "":
+	case os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_IAM") != "" || os.Getenv("ECS_CONTAINER_METADATA_URI") != "":
 		return amazon.New(
 			amazon.WithDeviceName(c.Amazon.DeviceName),
 			amazon.WithImage(c.Amazon.Image),
